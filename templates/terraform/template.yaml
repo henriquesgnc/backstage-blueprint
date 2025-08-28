@@ -1,0 +1,93 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: terraform
+  title: Terraform Module
+  description: Scaffold a Terraform module with CI/CD pipeline (fmt, validate, plan, apply)
+  tags:
+    - terraform
+    - iac
+    - infrastructure
+    - aws
+spec:
+  owner: user:guest
+  type: service
+
+  parameters:
+    - title: Module Details
+      required:
+        - moduleName
+        - provider
+        - githubOrg
+      properties:
+        githubOrg:
+          title: GitHub Organization
+          type: string
+          description: GitHub organization or user where the repo will be created
+          default: replace-with-your-github-org
+          ui:help: "Example: my-company, henriquesgnc"
+        moduleName:
+          title: Module Name
+          type: string
+          description: Name of the Terraform module
+          pattern: "^[a-z0-9-]+$"
+          ui:autofocus: true
+          ui:help: "Example: s3-bucket, vpc, ecs-service"
+        description:
+          title: Description
+          type: string
+          default: "Terraform module created with Backstage"
+        provider:
+          title: Cloud Provider
+          type: string
+          default: aws
+          enum:
+            - aws
+            - gcp
+            - azure
+          enumNames:
+            - AWS
+            - Google Cloud
+            - Azure
+        backend:
+          title: Backend Type
+          type: string
+          default: s3
+          enum:
+            - s3
+            - gcs
+            - azurerm
+
+  steps:
+    - id: fetch
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          moduleName: ${{ parameters.moduleName }}
+          description: ${{ parameters.description }}
+          provider: ${{ parameters.provider }}
+          backend: ${{ parameters.backend }}
+          githubOrg: ${{ parameters.githubOrg }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: github.com?repo=terraform-${{ parameters.moduleName }}&owner=${{ parameters.githubOrg }}
+        defaultBranch: main
+        allowedHosts: ["github.com"]
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: catalog-info.yaml
+
+  output:
+    links:
+      - title: Open Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+        icon: github

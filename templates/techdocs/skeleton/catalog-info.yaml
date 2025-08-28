@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.docName }}
+  description: ${{ values.description }}
+  annotations:
+    github.com/project-slug: ${{ values.githubOrg }}/${{ values.docName }}
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: website
+  lifecycle: production
+  owner: user:guest

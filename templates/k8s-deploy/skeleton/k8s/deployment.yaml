@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.appName }}
+  labels:
+    app: ${{ values.appName }}
+spec:
+  replicas: ${{ values.replicas }}
+  selector:
+    matchLabels:
+      app: ${{ values.appName }}
+  template:
+    metadata:
+      labels:
+        app: ${{ values.appName }}
+    spec:
+      containers:
+        - name: ${{ values.appName }}
+          image: {% if values.registry == 'ecr' %}<AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/{% endif %}${{ values.imageName }}:latest
+          ports:
+            - containerPort: ${{ values.port }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

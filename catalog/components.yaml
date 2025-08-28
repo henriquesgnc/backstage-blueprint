@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: exemplo-app
+  description: Exemplo de aplicação registrada no catálogo
+  annotations:
+    backstage.io/managed-by: backstage
+  tags:
+    - example
+    - demo
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user:guest
+  system: exemplo-sistema
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: exemplo-sistema
+  description: Sistema de exemplo
+spec:
+  owner: user:guest

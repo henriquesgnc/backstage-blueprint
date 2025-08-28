@@ -1,0 +1,19 @@
+services:
+  backstage:
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
+    container_name: backstage-app
+    restart: unless-stopped
+    ports:
+      - "3000:7007"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - NODE_OPTIONS=--no-node-snapshot
+    volumes:
+      - ./app-config.yaml:/app/app-config.yaml:ro
+      - ./examples:/app/examples:ro
+      - ./catalog:/app/catalog:rw
+      - ./templates:/app/templates:ro

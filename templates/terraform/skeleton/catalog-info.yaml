@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terraform-${{ values.moduleName }}
+  description: ${{ values.description }}
+  annotations:
+    github.com/project-slug: ${{ values.githubOrg }}/terraform-${{ values.moduleName }}
+  tags:
+    - terraform
+    - iac
+    - ${{ values.provider }}
+spec:
+  type: resource
+  lifecycle: production
+  owner: user:guest

@@ -1,0 +1,72 @@
+name: Deploy Lambda
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ '{{' }} secrets.AWS_ROLE_ARN {{ '}}' }}
+          aws-region: us-east-1
+{% if values.runtime == 'node20' %}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: lambda
+        run: npm ci --only=production
+
+      - name: Package Lambda
+        working-directory: lambda
+        run: zip -r ../function.zip .
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ values.functionName }} \
+            --zip-file fileb://function.zip \
+            --publish || \
+          aws lambda create-function \
+            --function-name ${{ values.functionName }} \
+            --runtime nodejs20.x \
+            --role ${{ '{{' }} secrets.LAMBDA_ROLE_ARN {{ '}}' }} \
+            --handler index.handler \
+            --memory-size ${{ values.memory }} \
+            --timeout ${{ values.timeout }} \
+            --zip-file fileb://function.zip
+{% elif values.runtime == 'python312' %}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: lambda
+        run: pip install -r requirements.txt -t .
+
+      - name: Package Lambda
+        working-directory: lambda
+        run: zip -r ../function.zip .
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ values.functionName }} \
+            --zip-file fileb://function.zip \
+            --publish || \
+          aws lambda create-function \
+            --function-name ${{ values.functionName }} \
+            --runtime python3.12 \
+            --role ${{ '{{' }} secrets.LAMBDA_ROLE_ARN {{ '}}' }} \
+            --handler handler.handler \
+            --memory-size ${{ values.memory }} \
+            --timeout ${{ values.timeout }} \
+            --zip-file fileb://function.zip
+{% endif %}

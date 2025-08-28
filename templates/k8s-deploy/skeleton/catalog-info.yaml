@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.appName }}
+  description: ${{ values.appName }} deployed on Kubernetes
+  annotations:
+    github.com/project-slug: ${{ values.githubOrg }}/${{ values.appName }}
+    backstage.io/kubernetes-namespace: default
+  tags:
+    - kubernetes
+spec:
+  type: service
+  lifecycle: production
+  owner: user:guest

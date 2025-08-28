@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage
+  description: Backstage developer portal blueprint with multi-template scaffolder.
+  annotations:
+    github.com/project-slug: henriquesgnc/backstage-blueprint
+spec:
+  type: website
+  owner: user:guest
+  lifecycle: production

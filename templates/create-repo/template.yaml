@@ -1,0 +1,93 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-repo
+  title: Create Repository
+  description: Scaffold a new GitHub repository with CI and language boilerplate
+  tags:
+    - github
+    - repository
+    - scaffold
+spec:
+  owner: user:guest
+  type: service
+
+  parameters:
+    - title: Repository Details
+      required:
+        - repoName
+        - language
+        - githubOrg
+      properties:
+        githubOrg:
+          title: GitHub Organization
+          type: string
+          description: GitHub organization or user where the repo will be created
+          default: replace-with-your-github-org
+          ui:help: "Example: my-company, henriquesgnc"
+        repoName:
+          title: Repository Name
+          type: string
+          description: Name of the new GitHub repository
+          pattern: "^[a-z0-9-]+$"
+          ui:autofocus: true
+          ui:help: "Example: my-service, api-gateway"
+        description:
+          title: Description
+          type: string
+          description: Short description for the repository
+          default: "Created with Backstage"
+        language:
+          title: Language
+          type: string
+          description: Choose the primary language
+          default: node
+          enum:
+            - node
+            - python
+            - go
+          enumNames:
+            - Node.js (TypeScript)
+            - Python
+            - Go
+        visibility:
+          title: Visibility
+          type: string
+          default: public
+          enum:
+            - public
+            - private
+
+  steps:
+    - id: fetch
+      name: Fetch Skeleton
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          repoName: ${{ parameters.repoName }}
+          description: ${{ parameters.description }}
+          language: ${{ parameters.language }}
+          githubOrg: ${{ parameters.githubOrg }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        repoUrl: github.com?repo=${{ parameters.repoName }}&owner=${{ parameters.githubOrg }}
+        visibility: ${{ parameters.visibility }}
+        defaultBranch: main
+        allowedHosts: ["github.com"]
+
+    - id: register
+      name: Register in Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: catalog-info.yaml
+
+  output:
+    links:
+      - title: Open Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+        icon: github
